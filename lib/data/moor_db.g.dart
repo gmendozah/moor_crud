@@ -8,17 +8,16 @@ part of 'moor_db.dart';
 
 // ignore_for_file: unnecessary_brace_in_string_interps, unnecessary_this
 class BlogPost extends DataClass implements Insertable<BlogPost> {
-  final int id;
+  final int? id;
   final String name;
   final String? content;
   final DateTime? date;
-  BlogPost({required this.id, required this.name, this.content, this.date});
+  BlogPost({this.id, required this.name, this.content, this.date});
   factory BlogPost.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String? prefix}) {
     final effectivePrefix = prefix ?? '';
     return BlogPost(
-      id: const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
+      id: const IntType().mapFromDatabaseResponse(data['${effectivePrefix}id']),
       name: const StringType()
           .mapFromDatabaseResponse(data['${effectivePrefix}name'])!,
       content: const StringType()
@@ -30,7 +29,9 @@ class BlogPost extends DataClass implements Insertable<BlogPost> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    map['id'] = Variable<int>(id);
+    if (!nullToAbsent || id != null) {
+      map['id'] = Variable<int?>(id);
+    }
     map['name'] = Variable<String>(name);
     if (!nullToAbsent || content != null) {
       map['content'] = Variable<String?>(content);
@@ -43,7 +44,7 @@ class BlogPost extends DataClass implements Insertable<BlogPost> {
 
   BlogPostsCompanion toCompanion(bool nullToAbsent) {
     return BlogPostsCompanion(
-      id: Value(id),
+      id: id == null && nullToAbsent ? const Value.absent() : Value(id),
       name: Value(name),
       content: content == null && nullToAbsent
           ? const Value.absent()
@@ -56,7 +57,7 @@ class BlogPost extends DataClass implements Insertable<BlogPost> {
       {ValueSerializer? serializer}) {
     serializer ??= moorRuntimeOptions.defaultSerializer;
     return BlogPost(
-      id: serializer.fromJson<int>(json['id']),
+      id: serializer.fromJson<int?>(json['id']),
       name: serializer.fromJson<String>(json['name']),
       content: serializer.fromJson<String?>(json['content']),
       date: serializer.fromJson<DateTime?>(json['date']),
@@ -66,7 +67,7 @@ class BlogPost extends DataClass implements Insertable<BlogPost> {
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= moorRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'id': serializer.toJson<int>(id),
+      'id': serializer.toJson<int?>(id),
       'name': serializer.toJson<String>(name),
       'content': serializer.toJson<String?>(content),
       'date': serializer.toJson<DateTime?>(date),
@@ -105,7 +106,7 @@ class BlogPost extends DataClass implements Insertable<BlogPost> {
 }
 
 class BlogPostsCompanion extends UpdateCompanion<BlogPost> {
-  final Value<int> id;
+  final Value<int?> id;
   final Value<String> name;
   final Value<String?> content;
   final Value<DateTime?> date;
@@ -122,7 +123,7 @@ class BlogPostsCompanion extends UpdateCompanion<BlogPost> {
     this.date = const Value.absent(),
   }) : name = Value(name);
   static Insertable<BlogPost> custom({
-    Expression<int>? id,
+    Expression<int?>? id,
     Expression<String>? name,
     Expression<String?>? content,
     Expression<DateTime?>? date,
@@ -136,7 +137,7 @@ class BlogPostsCompanion extends UpdateCompanion<BlogPost> {
   }
 
   BlogPostsCompanion copyWith(
-      {Value<int>? id,
+      {Value<int?>? id,
       Value<String>? name,
       Value<String?>? content,
       Value<DateTime?>? date}) {
@@ -152,7 +153,7 @@ class BlogPostsCompanion extends UpdateCompanion<BlogPost> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (id.present) {
-      map['id'] = Variable<int>(id.value);
+      map['id'] = Variable<int?>(id.value);
     }
     if (name.present) {
       map['name'] = Variable<String>(name.value);
@@ -187,7 +188,7 @@ class $BlogPostsTable extends BlogPosts
   @override
   late final GeneratedIntColumn id = _constructId();
   GeneratedIntColumn _constructId() {
-    return GeneratedIntColumn('id', $tableName, false,
+    return GeneratedIntColumn('id', $tableName, true,
         hasAutoIncrement: true, declaredAsPrimaryKey: true);
   }
 

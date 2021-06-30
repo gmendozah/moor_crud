@@ -3,7 +3,7 @@ import 'package:moor_flutter/moor_flutter.dart';
 part 'moor_db.g.dart';
 
 class BlogPosts extends Table {
-  IntColumn get id => integer().autoIncrement()();
+  IntColumn get id => integer().nullable().autoIncrement()();
 
   TextColumn get name => text().withLength(min: 1, max: 80)();
 
